@@ -1,0 +1,32 @@
+# sprite-env configuration
+# Copy this file to config.toml and customize for your setup.
+
+# Path to the SavvyCal appointments app repo
+app_dir = "~/Code/savvycal/appointments-app"
+
+# ---------------------------------------------------------------------------
+# Personal: dotfiles
+# ---------------------------------------------------------------------------
+
+# Git repo URL for your dotfiles (leave empty to skip)
+dotfiles_repo = ""
+
+# Command to run after cloning dotfiles (relative to the dotfiles dir)
+dotfiles_bootstrap_cmd = "./install.sh"
+
+# ---------------------------------------------------------------------------
+# Personal: editor
+# ---------------------------------------------------------------------------
+
+# Preferred editor: "neovim", "none", or leave empty to skip
+editor = "neovim"
+
+# ---------------------------------------------------------------------------
+# Personal: shell
+# ---------------------------------------------------------------------------
+
+# Enable tmux and create a dev-start layout script
+tmux = true
+
+# Install starship prompt
+starship = false
