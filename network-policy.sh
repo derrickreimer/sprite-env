@@ -73,10 +73,10 @@ ALLOWED_DOMAINS=(
 echo "Setting network policy for Sprite: ${SPRITE_NAME}"
 echo "Allowing ${#ALLOWED_DOMAINS[@]} domains..."
 
-# Join domains with commas for the sprites CLI
+# Join domains with commas for the sprite CLI
 DOMAIN_LIST=$(IFS=,; echo "${ALLOWED_DOMAINS[*]}")
 
-sprites network-policy set "$SPRITE_NAME" --allow "$DOMAIN_LIST"
+sprite network-policy set "$SPRITE_NAME" --allow "$DOMAIN_LIST"
 
 echo "Network policy set successfully."
 echo ""
