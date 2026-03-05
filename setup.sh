@@ -13,7 +13,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Bootstrap a Sprites.dev VM as a SavvyCal Appointments dev environment.
+Bootstrap a Sprites.dev VM as a dev environment.
 
 Options:
   --shared-only     Run only shared setup (languages, services, tools)
@@ -23,7 +23,6 @@ Options:
 Environment variables:
   SPRITE_ENV_CONFIG  Path to config.toml (default: ./config.toml)
   APP_DIR            Path to the app repo (overrides config.toml)
-  EZSUITE_AUTH_KEY   Auth key for the ezsuite private hex repo
 EOF
 }
 
@@ -68,37 +67,20 @@ run_app_setup() {
     return
   fi
 
-  cd "$APP_DIR"
+  local setup_script
+  setup_script="$(toml_get "$CONFIG_FILE" "app_setup_cmd" 2>/dev/null || true)"
+  setup_script="${setup_script:-script/sprite-setup}"
 
-  # Configure private hex repo
-  if [[ -n "${EZSUITE_AUTH_KEY:-}" ]]; then
-    step "Configuring ezsuite hex repo..."
-    mix hex.repo add ezsuite https://hex.pm/repos/ezsuite --auth-key "$EZSUITE_AUTH_KEY" 2>/dev/null || \
-      info "ezsuite hex repo already configured"
-  else
-    warn "EZSUITE_AUTH_KEY not set — skipping private hex repo config"
+  local full_path="${APP_DIR}/${setup_script}"
+
+  if [[ ! -x "$full_path" ]]; then
+    warn "App setup script not found at ${full_path}, skipping"
+    warn "Create ${setup_script} in your app repo to automate app-specific setup"
+    return
   fi
 
-  # Copy dev.secret.exs if it doesn't exist
-  if [[ ! -f config/dev.secret.exs ]] && [[ -f config/dev.secret.exs.example ]]; then
-    step "Copying dev.secret.exs from example..."
-    cp config/dev.secret.exs.example config/dev.secret.exs
-    info "dev.secret.exs created"
-  fi
-
-  # Install dependencies
-  step "Installing Elixir dependencies..."
-  mix local.hex --force --if-missing
-  mix local.rebar --force --if-missing
-  mix deps.get
-
-  step "Installing Node.js dependencies..."
-  npm install --prefix assets
-
-  # Setup database
-  step "Setting up databases..."
-  mix ecto.setup
-
+  step "Running app setup: ${setup_script}..."
+  (cd "$APP_DIR" && bash "$full_path")
   info "App setup complete"
 }
 

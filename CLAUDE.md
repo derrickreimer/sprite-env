@@ -1,6 +1,6 @@
 # sprite-env — Claude Code guidance
 
-This repo contains setup scripts for bootstrapping a Sprites.dev VM as a SavvyCal Appointments dev environment.
+This repo contains setup scripts for bootstrapping a Sprites.dev VM as a dev environment.
 
 ## Project structure
 
@@ -23,14 +23,9 @@ personal/             # Personal setup (dotfiles, editor, shell)
 - **mise** is used as the version manager (not asdf)
 - PostgreSQL 16 with user `postgres`/`postgres`
 
-## The app being developed
+## App setup convention
 
-The target application is **SavvyCal Appointments** — a Phoenix/Elixir app located at the path configured in `config.toml` (`app_dir`). Key details:
-
-- Erlang/OTP 26, Elixir 1.17, Node.js 18
-- PostgreSQL databases: `nova_dev`, `nova_test`
-- Private hex repo: `ezsuite` (requires `EZSUITE_AUTH_KEY`)
-- Uses mjml (Rust NIF) for email templates
+App-specific setup (deps, database, secrets) lives in the app repo, not here. After shared and personal setup, `setup.sh` runs `script/sprite-setup` from the app directory (configurable via `app_setup_cmd` in config.toml). The app repo owns its own bootstrap logic.
 
 ## When editing these scripts
 

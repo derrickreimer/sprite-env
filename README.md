@@ -1,6 +1,6 @@
 # sprite-env
 
-Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites.dev) VM as a **SavvyCal Appointments** dev environment.
+Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites.dev) VM as a dev environment.
 
 ## Quick start
 
@@ -19,13 +19,7 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
    # Edit config.toml with your preferences
    ```
 
-4. **Set required environment variables:**
-
-   ```bash
-   export EZSUITE_AUTH_KEY="your-auth-key"
-   ```
-
-5. **Run setup:**
+4. **Run setup:**
 
    ```bash
    ./setup.sh
@@ -62,6 +56,12 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 # Personal setup only (dotfiles, editor, shell)
 ./setup.sh --personal-only
 ```
+
+## App setup
+
+After shared and personal setup, `setup.sh` looks for a `script/sprite-setup` script in your app repo and runs it. This keeps app-specific logic (installing deps, creating databases, copying secret configs) in the app repo where it belongs.
+
+To customize the script path, set `app_setup_cmd` in `config.toml`.
 
 ## Post-hibernation
 

@@ -1,8 +1,11 @@
 # sprite-env configuration
 # Copy this file to config.toml and customize for your setup.
 
-# Path to the SavvyCal appointments app repo
+# Path to the app repo
 app_dir = "~/Code/savvycal/appointments-app"
+
+# App setup script (relative to app_dir, default: script/sprite-setup)
+# app_setup_cmd = "script/sprite-setup"
 
 # ---------------------------------------------------------------------------
 # Personal: dotfiles
@@ -18,8 +21,8 @@ dotfiles_bootstrap_cmd = "./install.sh"
 # Personal: editor
 # ---------------------------------------------------------------------------
 
-# Preferred editor: "neovim", "none", or leave empty to skip
-editor = "neovim"
+# Preferred editor: "nvim", "none", or leave empty to skip
+editor = "nvim"
 
 # ---------------------------------------------------------------------------
 # Personal: shell
