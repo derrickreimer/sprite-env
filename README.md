@@ -13,7 +13,7 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 2. **Log into the VM and run the bootstrap script.** This installs `gh`, authenticates with GitHub, clones repos, and creates `config.toml`:
 
    ```bash
-   ./bootstrap.sh
+   curl -fsSL https://raw.githubusercontent.com/derrickreimer/sprite-env/main/bootstrap.sh | bash
    ```
 
 3. **Edit config and run setup:**
