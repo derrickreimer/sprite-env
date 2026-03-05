@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
-# Set the Sprites.dev network policy for the SavvyCal dev environment.
+# Set the Sprites.dev network policy for a dev environment.
 # Run this from the HOST machine (not inside the Sprite VM).
 #
 # Usage: ./network-policy.sh <sprite-name>
+#
+# Requires SPRITES_TOKEN env var (create at sprites.dev/account).
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $(basename "$0") <sprite-name>"
   echo ""
   echo "Sets the network allowlist for the given Sprite so that"
-  echo "the SavvyCal appointments dev environment can reach all"
-  echo "required external services."
+  echo "the dev environment can reach all required external services."
+  echo ""
+  echo "Requires SPRITES_TOKEN env var."
+  exit 1
+fi
+
+if [[ -z "${SPRITES_TOKEN:-}" ]]; then
+  echo "Error: SPRITES_TOKEN is not set."
+  echo "Create a token at https://sprites.dev/account"
   exit 1
 fi
 
@@ -38,8 +47,6 @@ ALLOWED_DOMAINS=(
 
   # Erlang/Elixir builds
   "binaries2.erlang-solutions.com"
-  "builds.hex.pm"
-  "repo.hex.pm"
 
   # Rust
   "sh.rustup.rs"
@@ -70,15 +77,30 @@ ALLOWED_DOMAINS=(
   "sentry.io"
 )
 
+# Build JSON rules array
+RULES="["
+for i in "${!ALLOWED_DOMAINS[@]}"; do
+  [[ $i -gt 0 ]] && RULES+=","
+  RULES+="{\"action\":\"allow\",\"domain\":\"${ALLOWED_DOMAINS[$i]}\"}"
+done
+RULES+="]"
+
 echo "Setting network policy for Sprite: ${SPRITE_NAME}"
 echo "Allowing ${#ALLOWED_DOMAINS[@]} domains..."
 
-# Join domains with commas for the sprite CLI
-DOMAIN_LIST=$(IFS=,; echo "${ALLOWED_DOMAINS[*]}")
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+  "https://api.sprites.dev/v1/sprites/${SPRITE_NAME}/policy/network" \
+  -H "Authorization: Bearer ${SPRITES_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "{\"rules\":${RULES}}")
 
-sprite network-policy set "$SPRITE_NAME" --allow "$DOMAIN_LIST"
+if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+  echo "Network policy set successfully."
+else
+  echo "Error: API returned HTTP ${HTTP_CODE}"
+  exit 1
+fi
 
-echo "Network policy set successfully."
 echo ""
 echo "Allowed domains:"
 for domain in "${ALLOWED_DOMAINS[@]}"; do
