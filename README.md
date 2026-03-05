@@ -4,24 +4,23 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 
 ## Quick start
 
-1. **Create a Sprite** and clone this repo onto it.
-
-2. **Set the network policy** (from your host machine):
+1. **Set the network policy** (from your host machine):
 
    ```bash
    ./network-policy.sh <sprite-name>
    ```
 
-3. **Copy and edit the config:**
+2. **Log into the VM and run the bootstrap script.** This installs `gh`, authenticates with GitHub, clones repos, and creates `config.toml`:
 
    ```bash
-   cp config.example.toml config.toml
-   # Edit config.toml with your preferences
+   ./bootstrap.sh
    ```
 
-4. **Run setup:**
+3. **Edit config and run setup:**
 
    ```bash
+   cd ~/Code/derrickreimer/sprite-env
+   # Edit config.toml with your preferences
    ./setup.sh
    ```
 
