@@ -12,9 +12,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 SPRITE_ENV_REPO="derrickreimer/sprite-env"
-APP_REPO="savvycal/appointments-app"
-APP_DIR="$HOME/Code/savvycal/appointments-app"
-SPRITE_ENV_DIR="$HOME/Code/derrickreimer/sprite-env"
+SPRITE_ENV_DIR="$HOME/sprite-env"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -93,9 +91,7 @@ main() {
   auth_gh
 
   clone_repo "$SPRITE_ENV_REPO" "$SPRITE_ENV_DIR"
-  clone_repo "$APP_REPO" "$APP_DIR"
 
-  # Prompt to create config.toml if it doesn't exist
   if [[ ! -f "${SPRITE_ENV_DIR}/config.toml" ]]; then
     step "Creating config.toml from example..."
     cp "${SPRITE_ENV_DIR}/config.example.toml" "${SPRITE_ENV_DIR}/config.toml"
