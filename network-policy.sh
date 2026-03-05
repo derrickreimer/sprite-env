@@ -84,7 +84,7 @@ RULES+="]"
 echo "Setting network policy for Sprite: ${SPRITE_NAME}"
 echo "Allowing ${#ALLOWED_DOMAINS[@]} domains..."
 
-sprite api -s "$SPRITE_NAME" POST /policy/network -d "{\"rules\":${RULES}}"
+sprite api -s "$SPRITE_NAME" /policy/network -d "{\"rules\":${RULES}}"
 
 echo ""
 echo "Network policy set successfully."
