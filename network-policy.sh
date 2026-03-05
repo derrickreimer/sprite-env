@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Set the Sprites.dev network policy for a dev environment.
-# Run this from the HOST machine (not inside the Sprite VM).
+# Run this from the HOST machine using the sprite CLI.
 #
 # Usage: ./network-policy.sh <sprite-name>
-#
-# Requires SPRITES_TOKEN env var (create at sprites.dev/account).
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
@@ -12,14 +10,12 @@ if [[ $# -lt 1 ]]; then
   echo ""
   echo "Sets the network allowlist for the given Sprite so that"
   echo "the dev environment can reach all required external services."
-  echo ""
-  echo "Requires SPRITES_TOKEN env var."
   exit 1
 fi
 
-if [[ -z "${SPRITES_TOKEN:-}" ]]; then
-  echo "Error: SPRITES_TOKEN is not set."
-  echo "Create a token at https://sprites.dev/account"
+if ! command -v sprite &>/dev/null; then
+  echo "Error: sprite CLI not found."
+  echo "Install it from https://docs.sprites.dev/cli/installation/"
   exit 1
 fi
 
@@ -88,19 +84,10 @@ RULES+="]"
 echo "Setting network policy for Sprite: ${SPRITE_NAME}"
 echo "Allowing ${#ALLOWED_DOMAINS[@]} domains..."
 
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-  "https://api.sprites.dev/v1/sprites/${SPRITE_NAME}/policy/network" \
-  -H "Authorization: Bearer ${SPRITES_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d "{\"rules\":${RULES}}")
+sprite api -s "$SPRITE_NAME" POST /policy/network -d "{\"rules\":${RULES}}"
 
-if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
-  echo "Network policy set successfully."
-else
-  echo "Error: API returned HTTP ${HTTP_CODE}"
-  exit 1
-fi
-
+echo ""
+echo "Network policy set successfully."
 echo ""
 echo "Allowed domains:"
 for domain in "${ALLOWED_DOMAINS[@]}"; do
