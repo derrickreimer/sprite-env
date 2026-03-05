@@ -1,10 +1,7 @@
 # sprite-env configuration
 # Copy this file to config.toml and customize for your setup.
 
-# Path to the app repo
-app_dir = "~/Code/savvycal/appointments-app"
-
-# App setup script (relative to app_dir, default: script/sprite-setup)
+# App setup script (relative to ~/app, default: script/sprite-setup)
 # app_setup_cmd = "script/sprite-setup"
 
 # ---------------------------------------------------------------------------

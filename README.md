@@ -10,7 +10,7 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
    ./network-policy.sh <sprite-name>
    ```
 
-2. **Log into the VM and run the bootstrap script.** This installs `gh`, authenticates with GitHub, clones repos, and creates `config.toml`:
+2. **Log into the VM and run the bootstrap script.** This installs `gh`, authenticates with GitHub, clones sprite-env, and creates `config.toml`:
 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/derrickreimer/sprite-env/main/bootstrap.sh | bash
@@ -19,9 +19,9 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 3. **Edit config and run setup:**
 
    ```bash
-   cd ~/Code/derrickreimer/sprite-env
+   cd ~/sprite-env
    # Edit config.toml with your preferences
-   ./setup.sh
+   ./setup.sh svycal/appointments-app
    ```
 
 ## What gets installed
@@ -47,18 +47,18 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 
 ```bash
 # Full setup
-./setup.sh
+./setup.sh svycal/appointments-app
 
 # Shared setup only (no personal customization)
-./setup.sh --shared-only
+./setup.sh --shared-only svycal/appointments-app
 
 # Personal setup only (dotfiles, editor, shell)
-./setup.sh --personal-only
+./setup.sh --personal-only svycal/appointments-app
 ```
 
 ## App setup
 
-After shared and personal setup, `setup.sh` looks for a `script/sprite-setup` script in your app repo and runs it. This keeps app-specific logic (installing deps, creating databases, copying secret configs) in the app repo where it belongs.
+The app repo is passed as an argument to `setup.sh` and cloned to `~/app`. After shared and personal setup, `setup.sh` looks for a `script/sprite-setup` script in the app repo and runs it. This keeps app-specific logic (installing deps, creating databases, copying secret configs) in the app repo where it belongs.
 
 To customize the script path, set `app_setup_cmd` in `config.toml`.
 

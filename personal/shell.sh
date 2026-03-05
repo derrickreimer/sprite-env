@@ -75,7 +75,7 @@ create_dev_start_script() {
 set -euo pipefail
 
 SESSION="dev"
-APP_DIR="${APP_DIR:-$HOME/Code/savvycal/appointments-app}"
+APP_DIR="${APP_DIR:-$HOME/app}"
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   echo "Session '$SESSION' already exists, attaching..."

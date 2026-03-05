@@ -5,24 +5,25 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/helpers.sh"
 
+APP_DIR="$HOME/app"
+
 # ---------------------------------------------------------------------------
 # Usage
 # ---------------------------------------------------------------------------
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") [OPTIONS]
+Usage: $(basename "$0") [OPTIONS] <github-repo>
 
 Bootstrap a Sprites.dev VM as a dev environment.
+
+Arguments:
+  <github-repo>     GitHub repo to clone (e.g. svycal/appointments-app)
 
 Options:
   --shared-only     Run only shared setup (languages, services, tools)
   --personal-only   Run only personal setup (dotfiles, editor, shell)
   -h, --help        Show this help message
-
-Environment variables:
-  SPRITE_ENV_CONFIG  Path to config.toml (default: ./config.toml)
-  APP_DIR            Path to the app repo (overrides config.toml)
 EOF
 }
 
@@ -59,13 +60,21 @@ run_personal() {
   bash "${SCRIPT_DIR}/personal/shell.sh"
 }
 
+clone_app_repo() {
+  if [[ -d "$APP_DIR" ]]; then
+    info "App repo already cloned at ${APP_DIR}"
+    return 0
+  fi
+
+  step "Cloning ${APP_REPO} to ${APP_DIR}..."
+  gh repo clone "$APP_REPO" "$APP_DIR"
+  info "App repo cloned"
+}
+
 run_app_setup() {
   step "=== App setup ==="
 
-  if [[ ! -d "$APP_DIR" ]]; then
-    warn "App directory not found at ${APP_DIR}, skipping app setup"
-    return
-  fi
+  clone_app_repo
 
   local setup_script
   setup_script="$(toml_get "$CONFIG_FILE" "app_setup_cmd" 2>/dev/null || true)"
@@ -92,14 +101,23 @@ main() {
   local shared_only=false
   local personal_only=false
 
+  APP_REPO=""
+
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --shared-only)   shared_only=true; shift ;;
       --personal-only) personal_only=true; shift ;;
       -h|--help)       usage; exit 0 ;;
-      *)               error "Unknown option: $1"; usage; exit 1 ;;
+      -*)              error "Unknown option: $1"; usage; exit 1 ;;
+      *)               APP_REPO="$1"; shift ;;
     esac
   done
+
+  if [[ -z "$APP_REPO" ]]; then
+    error "Missing required argument: <github-repo>"
+    usage
+    exit 1
+  fi
 
   if [[ ! -f "$CONFIG_FILE" ]]; then
     warn "Config file not found at ${CONFIG_FILE}"
@@ -107,8 +125,11 @@ main() {
     exit 1
   fi
 
+  export APP_DIR
+
   info "sprite-env setup starting..."
   info "Config: ${CONFIG_FILE}"
+  info "App repo: ${APP_REPO}"
   info "App dir: ${APP_DIR}"
   echo
 

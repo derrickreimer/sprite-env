@@ -25,7 +25,7 @@ personal/             # Personal setup (dotfiles, editor, shell)
 
 ## App setup convention
 
-App-specific setup (deps, database, secrets) lives in the app repo, not here. After shared and personal setup, `setup.sh` runs `script/sprite-setup` from the app directory (configurable via `app_setup_cmd` in config.toml). The app repo owns its own bootstrap logic.
+The app repo is passed as an argument to `setup.sh` (e.g. `./setup.sh svycal/appointments-app`) and cloned to `~/app`. App-specific setup (deps, database, secrets) lives in the app repo — `setup.sh` runs `script/sprite-setup` from `~/app` (configurable via `app_setup_cmd` in config.toml).
 
 ## When editing these scripts
 
