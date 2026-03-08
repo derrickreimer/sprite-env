@@ -133,6 +133,10 @@ main() {
   info "App dir: ${APP_DIR}"
   echo
 
+  # Clone the app repo first so .tool-versions is available for languages.sh
+  clone_app_repo
+  echo
+
   if [[ "$personal_only" != true ]]; then
     run_shared
     echo
