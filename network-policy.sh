@@ -40,6 +40,8 @@ ALLOWED_DOMAINS=(
   "objects.githubusercontent.com"
   "raw.githubusercontent.com"
   "release-assets.githubusercontent.com"
+  "github-releases.githubusercontent.com"
+  "codeload.github.com"
   "releases.hashicorp.com"
 
   # Erlang/Elixir builds
