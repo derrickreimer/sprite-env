@@ -16,7 +16,13 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
    curl -fsSL https://raw.githubusercontent.com/derrickreimer/sprite-env/main/bootstrap.sh | bash
    ```
 
-3. **Edit config and run setup:**
+3. **Set required environment variables** (add these to your shell profile):
+
+   ```bash
+   export EZSUITE_AUTH_KEY="your-auth-key"
+   ```
+
+4. **Edit config and run setup:**
 
    ```bash
    cd ~/sprite-env
