@@ -39,10 +39,16 @@ ALLOWED_DOMAINS=(
   "api.github.com"
   "objects.githubusercontent.com"
   "raw.githubusercontent.com"
+  "release-assets.githubusercontent.com"
   "releases.hashicorp.com"
 
   # Erlang/Elixir builds
+  "erlang.org"
+  "www.erlang.org"
   "binaries2.erlang-solutions.com"
+
+  # Node.js
+  "nodejs.org"
 
   # Rust
   "sh.rustup.rs"
@@ -58,6 +64,7 @@ ALLOWED_DOMAINS=(
   "archive.ubuntu.com"
   "security.ubuntu.com"
   "apt.postgresql.org"
+  "www.postgresql.org"
   "ppa.launchpadcontent.net"
 
   # GitHub Copilot MCP

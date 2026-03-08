@@ -18,6 +18,16 @@ install_postgres() {
   fi
 
   step "Installing PostgreSQL ${PG_VERSION}..."
+
+  # Add the PostgreSQL apt repo if not already configured
+  if [[ ! -f /etc/apt/sources.list.d/pgdg.list ]]; then
+    sudo apt-get install -y -qq curl ca-certificates
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+      | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+  fi
+
   sudo apt-get update -qq
   sudo apt-get install -y -qq postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} libpq-dev
   info "PostgreSQL ${PG_VERSION} installed"
