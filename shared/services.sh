@@ -24,7 +24,7 @@ install_postgres() {
     sudo apt-get install -y -qq curl ca-certificates
     curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
       | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-    echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo "$VERSION_CODENAME")-pgdg main" \
       | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
   fi
 
