@@ -74,7 +74,26 @@ read_tool_version() {
 # Main
 # ---------------------------------------------------------------------------
 
+disable_sprite_languages() {
+  local env_file="/etc/profile.d/languages_env"
+
+  if [[ ! -f "$env_file" ]]; then
+    return
+  fi
+
+  step "Disabling Sprite built-in language management..."
+  sudo bash -c "cat > $env_file" <<'EOF'
+# Disabled by sprite-env — using mise for language management instead.
+# Original values overrode MIX_HOME, HEX_HOME, and others.
+EOF
+
+  # Unset for the current session
+  unset MIX_HOME HEX_HOME NVM_DIR SDKMAN_DIR RBENV_ROOT
+  info "Sprite language management disabled"
+}
+
 main() {
+  disable_sprite_languages
   install_mise
 
   # Ensure mise is available
