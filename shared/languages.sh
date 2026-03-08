@@ -87,8 +87,21 @@ disable_sprite_languages() {
 # Original values overrode MIX_HOME, HEX_HOME, and others.
 EOF
 
+  # Move Sprite language wrappers out of the way
+  if [[ -d "/.sprite/bin" ]]; then
+    for cmd in elixir elixirc iex mix elixir-version; do
+      if [[ -f "/.sprite/bin/$cmd" ]]; then
+        sudo mv "/.sprite/bin/$cmd" "/.sprite/bin/${cmd}.disabled"
+      fi
+    done
+  fi
+
+  # Remove /.sprite/languages from PATH for this session
+  export PATH="${PATH/\/.sprite\/languages\/elixir\/current\/bin:/}"
+
   # Unset for the current session
   unset MIX_HOME HEX_HOME NVM_DIR SDKMAN_DIR RBENV_ROOT
+  unset -f elixir elixirc iex mix 2>/dev/null || true
   info "Sprite language management disabled"
 }
 
