@@ -56,7 +56,7 @@ toml_get_bool() {
 # Paths & defaults
 # ---------------------------------------------------------------------------
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[1]:-${BASH_SOURCE[0]}}")" && pwd)"
-REPO_DIR="$(cd "${SCRIPT_DIR}/.." 2>/dev/null && pwd || echo "$SCRIPT_DIR")"
+HELPERS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${HELPERS_DIR}/.." && pwd)"
 CONFIG_FILE="${SPRITE_ENV_CONFIG:-${REPO_DIR}/config.toml}"
 APP_DIR="${APP_DIR:-$HOME/app}"
