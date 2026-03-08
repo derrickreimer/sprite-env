@@ -28,7 +28,7 @@ main() {
     git -C "$target_dir" pull --ff-only || warn "Could not pull dotfiles"
   else
     step "Cloning dotfiles from ${repo}..."
-    git clone "$repo" "$target_dir"
+    gh repo clone "$repo" "$target_dir"
   fi
 
   if [[ -n "$bootstrap_cmd" ]]; then
