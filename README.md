@@ -4,30 +4,29 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 
 ## Quick start
 
-1. **Set the network policy** (from your host machine):
+1. **Select your Sprite and set the network policy:**
 
    ```bash
-   ./network-policy.sh <sprite-name>
+   sprite use <sprite-name>
+   ./network-policy.sh
    ```
 
-2. **Log into the VM and run the bootstrap script.** This installs `gh`, authenticates with GitHub, clones sprite-env, and creates `config.toml`:
+2. **Run the bootstrap script** (installs `gh`, authenticates with GitHub, clones sprite-env, creates `config.toml`):
 
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/derrickreimer/sprite-env/main/bootstrap.sh | bash
+   sprite exec bash -c 'curl -fsSL https://raw.githubusercontent.com/derrickreimer/sprite-env/main/bootstrap.sh | bash'
    ```
 
-3. **Set required environment variables** (add these to your shell profile):
+3. **Set required environment variables:**
 
    ```bash
-   export EZSUITE_AUTH_KEY="your-auth-key"
+   sprite exec bash -c 'echo "export EZSUITE_AUTH_KEY=your-auth-key" >> ~/.zshrc'
    ```
 
-4. **Edit config and run setup:**
+4. **Run setup:**
 
    ```bash
-   cd ~/sprite-env
-   # Edit config.toml with your preferences
-   ./setup.sh svycal/appointments-app
+   sprite exec bash -c 'cd ~/sprite-env && ./setup.sh svycal/appointments-app'
    ```
 
 ## What gets installed
@@ -73,7 +72,7 @@ To customize the script path, set `app_setup_cmd` in `config.toml`.
 When a Sprite wakes from hibernation, services need to be restarted. This happens automatically via systemd, or you can run manually:
 
 ```bash
-./wake.sh
+sprite exec bash -c 'cd ~/sprite-env && ./wake.sh'
 ```
 
 ## Configuration

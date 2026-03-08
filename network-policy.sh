@@ -2,24 +2,14 @@
 # Set the Sprites.dev network policy for a dev environment.
 # Run this from the HOST machine using the sprite CLI.
 #
-# Usage: ./network-policy.sh <sprite-name>
+# Usage: sprite use <sprite-name> && ./network-policy.sh
 set -euo pipefail
-
-if [[ $# -lt 1 ]]; then
-  echo "Usage: $(basename "$0") <sprite-name>"
-  echo ""
-  echo "Sets the network allowlist for the given Sprite so that"
-  echo "the dev environment can reach all required external services."
-  exit 1
-fi
 
 if ! command -v sprite &>/dev/null; then
   echo "Error: sprite CLI not found."
   echo "Install it from https://docs.sprites.dev/cli/installation/"
   exit 1
 fi
-
-SPRITE_NAME="$1"
 
 # Domains required for development
 ALLOWED_DOMAINS=(
@@ -93,10 +83,9 @@ for i in "${!ALLOWED_DOMAINS[@]}"; do
 done
 RULES+="]"
 
-echo "Setting network policy for Sprite: ${SPRITE_NAME}"
-echo "Allowing ${#ALLOWED_DOMAINS[@]} domains..."
+echo "Setting network policy (${#ALLOWED_DOMAINS[@]} domains)..."
 
-sprite api -s "$SPRITE_NAME" /policy/network -d "{\"rules\":${RULES}}"
+sprite api /policy/network -d "{\"rules\":${RULES}}"
 
 echo ""
 echo "Network policy set successfully."
