@@ -64,6 +64,7 @@ ALLOWED_DOMAINS=(
   "archive.ubuntu.com"
   "security.ubuntu.com"
   "apt.postgresql.org"
+  "apt-archive.postgresql.org"
   "www.postgresql.org"
   "ppa.launchpadcontent.net"
 

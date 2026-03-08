@@ -19,12 +19,25 @@ install_postgres() {
 
   step "Installing PostgreSQL ${PG_VERSION}..."
 
-  # Add the PostgreSQL apt repo if not already configured
-  if [[ ! -f /etc/apt/sources.list.d/pgdg.list ]]; then
+  # Add the PostgreSQL apt repo
+  local codename pg_repo_host
+  codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+
+  # Some Ubuntu releases are moved to the archive repo
+  case "$codename" in
+    plucky|focal|oracular)
+      pg_repo_host="apt-archive.postgresql.org"
+      ;;
+    *)
+      pg_repo_host="apt.postgresql.org"
+      ;;
+  esac
+
+  if ! grep -q "${codename}-pgdg" /etc/apt/sources.list.d/pgdg.list 2>/dev/null; then
     sudo apt-get install -y -qq curl ca-certificates
     curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-      | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-    echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo "$VERSION_CODENAME")-pgdg main" \
+      | sudo gpg --dearmor --yes -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] https://${pg_repo_host}/pub/repos/apt ${codename}-pgdg main" \
       | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
   fi
 
