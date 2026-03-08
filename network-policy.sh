@@ -24,6 +24,7 @@ SPRITE_NAME="$1"
 # Domains required for development
 ALLOWED_DOMAINS=(
   # Package registries
+  "ezsuite.dev"
   "hex.pm"
   "repo.hex.pm"
   "builds.hex.pm"
@@ -79,6 +80,7 @@ ALLOWED_DOMAINS=(
 
   # General dev services
   "api.anthropic.com"
+  "console.anthropic.com"
   "statsigapi.net"
   "sentry.io"
 )
