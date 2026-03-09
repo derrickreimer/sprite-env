@@ -26,6 +26,23 @@ error() { echo -e "\033[0;31m[error]\033[0m $*" >&2; }
 warn()  { echo -e "\033[0;33m[warn]\033[0m  $*"; }
 
 # ---------------------------------------------------------------------------
+# Load local .env so vars like GITHUB_TOKEN are available early
+# ---------------------------------------------------------------------------
+
+load_local_env() {
+  local env_file="${REPO_DIR}/.env"
+  [[ -f "$env_file" ]] || return 0
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    local key="${line%%=*}"
+    local val="${line#*=}"
+    [[ -z "$val" ]] && continue
+    export "${key}=${val}"
+  done < "$env_file"
+}
+
+# ---------------------------------------------------------------------------
 # Step 1: Verify sprite CLI
 # ---------------------------------------------------------------------------
 
@@ -33,13 +50,6 @@ verify_sprite_cli() {
   if ! command -v sprite &>/dev/null; then
     error "sprite CLI not found."
     echo "Install it from https://docs.sprites.dev/cli/installation/"
-    exit 1
-  fi
-
-  # Verify a sprite is selected by running a simple command
-  if ! sprite exec true &>/dev/null; then
-    error "No sprite selected or sprite is not running."
-    echo "Run: sprite use <sprite-name>"
     exit 1
   fi
 
@@ -165,6 +175,8 @@ run_setup_on_vm() {
 # ---------------------------------------------------------------------------
 
 main() {
+  load_local_env
+
   echo ""
   echo "=== sprite-env: host-side setup ==="
   echo ""
