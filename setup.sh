@@ -86,7 +86,16 @@ run_app_setup() {
   fi
 
   step "Running app setup: ${setup_script}..."
-  (cd "$APP_DIR" && bash "$full_path")
+  (
+    cd "$APP_DIR"
+
+    # Ensure mise-managed runtimes are on PATH (languages.sh runs in a
+    # subprocess so its PATH changes don't propagate here).
+    export PATH="$HOME/.local/bin:$PATH"
+    eval "$(mise activate bash 2>/dev/null || true)"
+
+    bash "$full_path"
+  )
   info "App setup complete"
 }
 
