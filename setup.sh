@@ -93,6 +93,10 @@ run_app_setup() {
     # subprocess so its PATH changes don't propagate here).
     export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
 
+    # Clear Sprite language env vars that may have leaked from the parent
+    # shell — mise-managed Elixir should use its own defaults.
+    unset MIX_HOME HEX_HOME 2>/dev/null || true
+
     bash "$full_path"
   )
   info "App setup complete"
