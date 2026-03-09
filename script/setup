@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+# Host-side orchestrator for setting up a Sprites.dev VM.
+#
+# Prerequisites:
+#   - sprite CLI installed (https://docs.sprites.dev/cli/installation/)
+#   - A sprite selected via `sprite use <sprite-name>`
+#
+# Usage:
+#   sprite use <sprite-name>
+#   script/setup
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+SPRITE_ENV_REPO="derrickreimer/sprite-env"
+SPRITE_ENV_DIR="\$HOME/sprite-env"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+
+info()  { echo -e "\033[0;32m[info]\033[0m  $*"; }
+step()  { echo -e "\033[0;36m[step]\033[0m  $*"; }
+error() { echo -e "\033[0;31m[error]\033[0m $*" >&2; }
+warn()  { echo -e "\033[0;33m[warn]\033[0m  $*"; }
+
+# ---------------------------------------------------------------------------
+# Step 1: Verify sprite CLI
+# ---------------------------------------------------------------------------
+
+verify_sprite_cli() {
+  if ! command -v sprite &>/dev/null; then
+    error "sprite CLI not found."
+    echo "Install it from https://docs.sprites.dev/cli/installation/"
+    exit 1
+  fi
+
+  # Verify a sprite is selected by running a simple command
+  if ! sprite exec true &>/dev/null; then
+    error "No sprite selected or sprite is not running."
+    echo "Run: sprite use <sprite-name>"
+    exit 1
+  fi
+
+  info "sprite CLI is ready"
+}
+
+# ---------------------------------------------------------------------------
+# Step 2: Apply network policy
+# ---------------------------------------------------------------------------
+
+apply_network_policy() {
+  step "Applying network policy..."
+  bash "${REPO_DIR}/network-policy.sh"
+  info "Network policy applied"
+}
+
+# ---------------------------------------------------------------------------
+# Step 3: Install gh on the VM
+# ---------------------------------------------------------------------------
+
+install_gh_on_vm() {
+  if sprite exec gh --version &>/dev/null; then
+    info "GitHub CLI already installed on VM"
+    return
+  fi
+
+  step "Installing GitHub CLI on VM..."
+  sprite exec bash -c '
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq curl
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq gh
+  '
+  info "GitHub CLI installed on VM"
+}
+
+# ---------------------------------------------------------------------------
+# Step 4: Authenticate gh
+# ---------------------------------------------------------------------------
+
+auth_gh_on_vm() {
+  if sprite exec gh auth status &>/dev/null; then
+    info "GitHub CLI already authenticated on VM"
+    return
+  fi
+
+  step "Authenticating GitHub CLI on VM..."
+
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    echo "$GITHUB_TOKEN" | sprite exec bash -c 'gh auth login --with-token'
+    info "GitHub CLI authenticated via GITHUB_TOKEN"
+  else
+    info "Opening device flow for GitHub authentication..."
+    info "Follow the prompts in the terminal to authenticate."
+    sprite exec -tty gh auth login --web -p https
+    info "GitHub CLI authenticated via device flow"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Step 5: Clone sprite-env repo on the VM
+# ---------------------------------------------------------------------------
+
+clone_sprite_env_on_vm() {
+  if sprite exec test -d "${SPRITE_ENV_DIR}" &>/dev/null; then
+    info "sprite-env already cloned on VM"
+    return
+  fi
+
+  step "Cloning sprite-env on VM..."
+  sprite exec gh repo clone "$SPRITE_ENV_REPO" "${SPRITE_ENV_DIR}"
+  info "sprite-env cloned on VM"
+}
+
+# ---------------------------------------------------------------------------
+# Step 6: Copy config.example.toml → config.toml
+# ---------------------------------------------------------------------------
+
+setup_config_on_vm() {
+  if sprite exec test -f "${SPRITE_ENV_DIR}/config.toml" &>/dev/null; then
+    info "config.toml already exists on VM"
+    return
+  fi
+
+  step "Creating config.toml from example..."
+  sprite exec cp "${SPRITE_ENV_DIR}/config.example.toml" "${SPRITE_ENV_DIR}/config.toml"
+  info "config.toml created on VM"
+}
+
+# ---------------------------------------------------------------------------
+# Step 7: Inject .env file from host → VM
+# ---------------------------------------------------------------------------
+
+inject_env_file() {
+  local env_file="${REPO_DIR}/.env"
+
+  if [[ ! -f "$env_file" ]]; then
+    warn "No .env file found at ${env_file}, skipping env injection"
+    return
+  fi
+
+  step "Injecting .env file to VM..."
+  sprite exec bash -c "cat > ${SPRITE_ENV_DIR}/.env" < "$env_file"
+  info ".env file injected to VM"
+}
+
+# ---------------------------------------------------------------------------
+# Step 8: Run setup.sh on the VM
+# ---------------------------------------------------------------------------
+
+run_setup_on_vm() {
+  step "Running setup.sh on VM..."
+  sprite exec bash -c "cd ${SPRITE_ENV_DIR} && ./setup.sh"
+  info "Setup complete on VM"
+}
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+main() {
+  echo ""
+  echo "=== sprite-env: host-side setup ==="
+  echo ""
+
+  verify_sprite_cli
+  echo ""
+
+  apply_network_policy
+  echo ""
+
+  install_gh_on_vm
+  auth_gh_on_vm
+  echo ""
+
+  clone_sprite_env_on_vm
+  setup_config_on_vm
+  inject_env_file
+  echo ""
+
+  run_setup_on_vm
+
+  echo ""
+  info "All done! Your Sprite VM is ready."
+}
+
+main "$@"

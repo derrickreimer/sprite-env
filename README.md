@@ -4,30 +4,34 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 
 ## Quick start
 
-1. **Select your Sprite and set the network policy:**
+1. **Select your Sprite:**
 
    ```bash
    sprite use <sprite-name>
-   ./network-policy.sh
    ```
 
-2. **Run the bootstrap script** (installs `gh`, authenticates with GitHub, clones sprite-env, creates `config.toml`):
+2. **Create your `.env` file** (if needed):
 
    ```bash
-   sprite exec bash -c 'curl -fsSL https://raw.githubusercontent.com/derrickreimer/sprite-env/main/bootstrap.sh | bash'
+   cp .env.example .env
+   # Fill in the values
    ```
 
-3. **Set required environment variables:**
+3. **Run setup:**
 
    ```bash
-   sprite exec bash -c 'echo "export EZSUITE_AUTH_KEY=your-auth-key" >> ~/.zshrc'
+   script/setup
    ```
 
-4. **Run setup:**
+   This single command handles everything: applies the network policy, installs and authenticates `gh` on the VM, clones repos, injects environment variables, and runs full setup.
 
-   ```bash
-   sprite exec bash -c 'cd ~/sprite-env && ./setup.sh svycal/appointments-app'
-   ```
+### Non-interactive provisioning
+
+Set `GITHUB_TOKEN` to skip the interactive GitHub device flow:
+
+```bash
+GITHUB_TOKEN=ghp_xxx script/setup
+```
 
 ## What gets installed
 
@@ -51,21 +55,27 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 ## Usage
 
 ```bash
-# Full setup
-./setup.sh svycal/appointments-app
+# Full setup (from host)
+script/setup
 
-# Shared setup only (no personal customization)
-./setup.sh --shared-only svycal/appointments-app
-
-# Personal setup only (dotfiles, editor, shell)
-./setup.sh --personal-only svycal/appointments-app
+# On the VM directly:
+./setup.sh                  # Full setup
+./setup.sh --shared-only    # Shared setup only (languages, services, tools)
+./setup.sh --personal-only  # Personal setup only (dotfiles, editor, shell)
 ```
 
 ## App setup
 
-The app repo is passed as an argument to `setup.sh` and cloned to `~/app`. After shared and personal setup, `setup.sh` looks for a `script/sprite-setup` script in the app repo and runs it. This keeps app-specific logic (installing deps, creating databases, copying secret configs) in the app repo where it belongs.
+The app repo is configured via `app_repo` in `config.toml` and cloned to `~/app`. After shared and personal setup, `setup.sh` looks for a `script/sprite-setup` script in the app repo and runs it. This keeps app-specific logic (installing deps, creating databases, copying secret configs) in the app repo where it belongs.
 
 To customize the script path, set `app_setup_cmd` in `config.toml`.
+
+## Environment variables
+
+Create a `.env` file (from `.env.example`) with your environment variables. `script/setup` injects this file into the VM. On the VM, variables are:
+
+- Exported in shell sessions via `~/.sprite-env-vars` (sourced from `~/.zshrc`)
+- Copied to `~/app/.env` for the app
 
 ## Post-hibernation
 
@@ -82,9 +92,11 @@ See `config.example.toml` for all available options.
 ## Project structure
 
 ```
-setup.sh              # Main orchestrator
+script/setup          # Host-side orchestrator (run from host)
+setup.sh              # VM-side orchestrator
 wake.sh               # Post-hibernation recovery
 config.example.toml   # Template configuration
+.env.example          # Template environment variables
 network-policy.sh     # Sprite network allowlist (run from host)
 lib/helpers.sh        # Shared utilities
 shared/

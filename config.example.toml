@@ -1,6 +1,9 @@
 # sprite-env configuration
 # Copy this file to config.toml and customize for your setup.
 
+# GitHub repo to clone as the app (e.g. "svycal/appointments-app")
+app_repo = ""
+
 # App setup script (relative to ~/app, default: script/sprite-setup)
 # app_setup_cmd = "script/sprite-setup"
 

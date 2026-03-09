@@ -13,12 +13,9 @@ APP_DIR="$HOME/app"
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") [OPTIONS] <github-repo>
+Usage: $(basename "$0") [OPTIONS]
 
 Bootstrap a Sprites.dev VM as a dev environment.
-
-Arguments:
-  <github-repo>     GitHub repo to clone (e.g. svycal/appointments-app)
 
 Options:
   --shared-only     Run only shared setup (languages, services, tools)
@@ -97,11 +94,50 @@ run_app_setup() {
 # Main
 # ---------------------------------------------------------------------------
 
+load_env_file() {
+  local env_file="${REPO_DIR}/.env"
+
+  if [[ ! -f "$env_file" ]]; then
+    return
+  fi
+
+  step "Loading .env file..."
+
+  # Copy .env to ~/app/.env if app dir exists
+  if [[ -d "$APP_DIR" ]]; then
+    cp "$env_file" "${APP_DIR}/.env"
+    info "Copied .env to ${APP_DIR}/.env"
+  fi
+
+  # Persist exports to ~/.sprite-env-vars (sourced from ~/.zshrc)
+  local vars_file="$HOME/.sprite-env-vars"
+  : > "$vars_file"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Skip comments and blank lines
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    # Skip lines without a value (e.g. KEY=)
+    local key="${line%%=*}"
+    local val="${line#*=}"
+    [[ -z "$val" ]] && continue
+    echo "export ${key}=${val}" >> "$vars_file"
+  done < "$env_file"
+
+  # Source the vars for the current session
+  # shellcheck disable=SC1090
+  source "$vars_file"
+
+  # Ensure ~/.zshrc sources the vars file
+  if ! grep -qF '.sprite-env-vars' "$HOME/.zshrc" 2>/dev/null; then
+    echo '[ -f "$HOME/.sprite-env-vars" ] && source "$HOME/.sprite-env-vars"' >> "$HOME/.zshrc"
+    info "Added .sprite-env-vars sourcing to ~/.zshrc"
+  fi
+
+  info ".env vars loaded"
+}
+
 main() {
   local shared_only=false
   local personal_only=false
-
-  APP_REPO=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -109,19 +145,21 @@ main() {
       --personal-only) personal_only=true; shift ;;
       -h|--help)       usage; exit 0 ;;
       -*)              error "Unknown option: $1"; usage; exit 1 ;;
-      *)               APP_REPO="$1"; shift ;;
+      *)               error "Unknown argument: $1"; usage; exit 1 ;;
     esac
   done
-
-  if [[ -z "$APP_REPO" ]]; then
-    error "Missing required argument: <github-repo>"
-    usage
-    exit 1
-  fi
 
   if [[ ! -f "$CONFIG_FILE" ]]; then
     warn "Config file not found at ${CONFIG_FILE}"
     warn "Copy config.example.toml to config.toml and customize it"
+    exit 1
+  fi
+
+  APP_REPO="$(toml_get "$CONFIG_FILE" "app_repo" 2>/dev/null || true)"
+
+  if [[ -z "$APP_REPO" ]]; then
+    error "app_repo is not set in ${CONFIG_FILE}"
+    error "Set it to the GitHub repo to clone (e.g. app_repo = \"svycal/appointments-app\")"
     exit 1
   fi
 
@@ -131,6 +169,10 @@ main() {
   info "Config: ${CONFIG_FILE}"
   info "App repo: ${APP_REPO}"
   info "App dir: ${APP_DIR}"
+  echo
+
+  # Load .env vars early so they're available to all setup scripts
+  load_env_file
   echo
 
   # Clone the app repo first so .tool-versions is available for languages.sh
@@ -148,6 +190,12 @@ main() {
   fi
 
   if [[ "$shared_only" != true && "$personal_only" != true ]]; then
+    # Copy .env to app dir now that it's cloned
+    if [[ -f "${REPO_DIR}/.env" && -d "$APP_DIR" ]]; then
+      cp "${REPO_DIR}/.env" "${APP_DIR}/.env"
+      info "Copied .env to ${APP_DIR}/.env"
+    fi
+
     run_app_setup
     echo
   fi
