@@ -27,11 +27,7 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 
 ### Non-interactive provisioning
 
-Set `GITHUB_TOKEN` to skip the interactive GitHub device flow:
-
-```bash
-GITHUB_TOKEN=ghp_xxx script/setup
-```
+Add `GITHUB_TOKEN` to your `.env` file to skip the interactive GitHub device flow.
 
 ## What gets installed
 
