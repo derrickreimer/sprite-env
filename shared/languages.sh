@@ -123,6 +123,8 @@ main() {
   install_runtime elixir "$elixir_version"
   install_runtime nodejs "$nodejs_version"
 
+  step "Generating mise shims..."
+  mise reshim
   info "All language runtimes installed"
 }
 
