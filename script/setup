@@ -118,13 +118,13 @@ auth_gh_on_vm() {
 # ---------------------------------------------------------------------------
 
 clone_sprite_env_on_vm() {
-  if sprite exec test -d "${SPRITE_ENV_DIR}" &>/dev/null; then
+  if sprite exec bash -c "test -d ${SPRITE_ENV_DIR}" &>/dev/null; then
     info "sprite-env already cloned on VM"
     return
   fi
 
   step "Cloning sprite-env on VM..."
-  sprite exec gh repo clone "$SPRITE_ENV_REPO" "${SPRITE_ENV_DIR}"
+  sprite exec bash -c "gh repo clone ${SPRITE_ENV_REPO} ${SPRITE_ENV_DIR}"
   info "sprite-env cloned on VM"
 }
 
@@ -133,14 +133,17 @@ clone_sprite_env_on_vm() {
 # ---------------------------------------------------------------------------
 
 setup_config_on_vm() {
-  if sprite exec test -f "${SPRITE_ENV_DIR}/config.toml" &>/dev/null; then
-    info "config.toml already exists on VM"
-    return
+  local config_file="${REPO_DIR}/config.toml"
+
+  if [[ ! -f "$config_file" ]]; then
+    error "No config.toml found at ${config_file}"
+    echo "Copy config.example.toml to config.toml and customize it."
+    exit 1
   fi
 
-  step "Creating config.toml from example..."
-  sprite exec cp "${SPRITE_ENV_DIR}/config.example.toml" "${SPRITE_ENV_DIR}/config.toml"
-  info "config.toml created on VM"
+  step "Uploading config.toml to VM..."
+  sprite exec bash -c "cat > ${SPRITE_ENV_DIR}/config.toml" < "$config_file"
+  info "config.toml uploaded to VM"
 }
 
 # ---------------------------------------------------------------------------

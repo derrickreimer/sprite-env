@@ -10,11 +10,11 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
    sprite use <sprite-name>
    ```
 
-2. **Create your `.env` file** (if needed):
+2. **Create your config files:**
 
    ```bash
-   cp .env.example .env
-   # Fill in the values
+   cp config.example.toml config.toml  # Required — set app_repo and other options
+   cp .env.example .env                # Optional — set GITHUB_TOKEN, app secrets, etc.
    ```
 
 3. **Run setup:**
@@ -28,6 +28,24 @@ Modular, idempotent shell scripts that bootstrap a [Sprites.dev](https://sprites
 ### Non-interactive provisioning
 
 Add `GITHUB_TOKEN` to your `.env` file to skip the interactive GitHub device flow.
+
+### GitHub token scopes
+
+The `gh` CLI requires these OAuth scopes:
+
+- **`repo`** – full repository access
+- **`read:org`** – read org and team membership (needed even for personal use, since `gh` uses it to resolve identities)
+- **`workflow`** – update GitHub Actions workflow files (needed if you interact with workflows at all)
+- **`read:packages`** / **`write:packages`** – if using GitHub Packages
+- **`gist`** – if using `gh gist` commands
+
+For a general-purpose dev VM bootstrap, the minimum viable set is:
+
+```
+repo,read:org,workflow
+```
+
+If you're generating the token manually (classic PAT), make sure to check all three. If you're using `gh auth login --with-token`, the token needs those scopes pre-granted before piping it in.
 
 ## What gets installed
 
